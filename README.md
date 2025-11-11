@@ -1,6 +1,6 @@
-Progresso nos estudos da Trilha Python DIO- Luiza Labs
+<h1>Progresso nos estudos da Trilha Python DIO- Luiza Labs</h1>
 
-<h1> módulos concluídos serão marcados com </h1>✅
+<h3> módulos concluídos serão marcados com ✅</h3>
 
 ​00 - Fundamentos ✅<br>
 ​01 - Estrutura de dados<br>
