@@ -2,7 +2,7 @@ Progresso nos estudos da Trilha Python DIO- Luiza Labs
 
 # módulos concluídos serão marcados com ✅
 
-​00 - Fundamentos ✅
+​00 - Fundamentos ✅<br>
 ​01 - Estrutura de dados
 ​02 - Programação Orientada a Objetos
 ​03 - Decoradores, Iteradores e Geradores
