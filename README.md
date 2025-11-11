@@ -1,1 +1,1 @@
-# Trilha Python DIO (estudando)
+# Trilha Python DIO
