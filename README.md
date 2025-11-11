@@ -1,4 +1,4 @@
-<h1>Progresso nos estudos da Trilha Python DIO- Luiza Labs</h1>
+<h1>Meu progresso nos estudos da Trilha Python DIO- Luiza Labs</h1>
 
 <h3> módulos concluídos serão marcados com ✅</h3>
 
