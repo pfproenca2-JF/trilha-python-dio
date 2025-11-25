@@ -1,0 +1,198 @@
+menu = """
+[d] Depositar
+[s] Sacar
+[e] Extrato
+[nu] Novo Usuário
+[nc] Nova Conta
+[lcontas] Listar Contas
+[q] Sair
+
+=> """
+
+USUARIOS = []
+CONTAS = []
+
+def criar_usuario(USUARIOS):
+    """Solicita dados, cria e valida um usuário, salvando na lista USUARIOS."""
+    cpf = input("Informe o CPF (somente números): ").strip()
+    cpf = ''.join(filter(str.isdigit, cpf))  # Garante apenas números
+
+    if any(u['cpf'] == cpf for u in USUARIOS):
+        print("Erro: já existe usuário cadastrado com esse CPF!")
+        return None
+
+    nome = input("Informe o nome completo: ").strip()
+    nascimento = input("Informe a data de nascimento (dd/mm/aaaa): ").strip()
+    endereco = input("Informe o endereço (logradouro, nro - bairro - cidade/sigla estado): ").strip()
+
+    usuario = {
+        "cpf": cpf,
+        "nome": nome,
+        "nascimento": nascimento,
+        "endereco": endereco
+    }
+    USUARIOS.append(usuario)
+    print("Usuário criado com sucesso!")
+    return usuario
+
+def criar_conta_corrente_por_cpf(cpf):
+    """Busca o usuário pelo CPF e cria uma conta vinculada ao usuário."""
+    cpf = ''.join(filter(str.isdigit, cpf))
+    usuario = next((u for u in USUARIOS if u['cpf'] == cpf), None)
+    if usuario is None:
+        print("Usuário não encontrado! Cadastre o usuário primeiro.")
+        return None
+    numero_conta = len(CONTAS) + 1  # Sequencial, inicia em 1
+    conta = {
+        "agencia": "0001",
+        "numero": numero_conta,
+        "usuario": usuario,
+        "saldo": 0.0,
+        "extrato": "",
+        "saques": 0
+    }
+    CONTAS.append(conta)
+    print(f"Conta criada! Agência: {conta['agencia']}, Conta: {conta['numero']} Titular: {usuario['nome']}")
+    return conta
+
+def listar_contas():
+    if not CONTAS:
+        print("Nenhuma conta cadastrada.")
+        return []
+    for conta in CONTAS:
+        usuario = conta['usuario']
+        print(f"Agência: {conta['agencia']} | Conta: {conta['numero']} | Titular: {usuario['nome']} | CPF: {usuario['cpf']}")
+    return CONTAS
+
+def depositar(saldo, valor, extrato, /):
+    if valor <= 0:
+        print("Valor inválido!")
+        return saldo, extrato
+    saldo += valor
+    extrato += f"Depósito: R$ {valor:.2f}\n"
+    print("Depósito realizado com sucesso!")
+    return saldo, extrato
+
+def sacar(*, saldo, valor, extrato, limite, numero_saques, limite_saques):
+    if valor <= 0:
+        print("Valor inválido!")
+        return saldo, extrato
+    if valor > saldo:
+        print("Saldo insuficiente.")
+        return saldo, extrato
+    if valor > limite:
+        print("Excede limite por saque.")
+        return saldo, extrato
+    if numero_saques >= limite_saques:
+        print("Limite de saques atingido.")
+        return saldo, extrato
+    saldo -= valor
+    extrato += f"Saque: R$ {valor:.2f}\n"
+    print("Saque realizado!")
+    return saldo, extrato
+
+def extrato(saldo, /, *, extrato):
+    texto = "\n========== EXTRATO ==========\n"
+    if extrato:
+        texto += extrato.strip() + "\n"
+    else:
+        texto += "Não foram realizadas movimentações.\n"
+    texto += f"Saldo atual: R$ {saldo:.2f}\n"
+    texto += "============================="
+    return texto
+
+def buscar_usuario_por_cpf(cpf):
+    cpf = ''.join(filter(str.isdigit, cpf))
+    return next((u for u in USUARIOS if u["cpf"] == cpf), None)
+
+def buscar_conta_por_cpf(cpf):
+    cpf = ''.join(filter(str.isdigit, cpf))
+    contas = [c for c in CONTAS if c["usuario"]["cpf"] == cpf]
+    # Permite múltiplas contas: o usuário escolhe uma delas
+    if not contas:
+        return None
+    if len(contas) == 1:
+        return contas[0]
+    # Se há várias contas, pedir o número da conta:
+    print("Usuário possui mais de uma conta. Contas disponíveis:")
+    for conta in contas:
+        print(f"- Conta número: {conta['numero']}, Agência: {conta['agencia']}")
+    while True:
+        try:
+            n_conta = int(input("Informe o número da conta para a operação: "))
+            conta_escolhida = next((c for c in contas if c['numero'] == n_conta), None)
+            if conta_escolhida:
+                return conta_escolhida
+            else:
+                print("Conta inválida. Tente novamente.")
+        except ValueError:
+            print("Número inválido. Tente novamente.")
+
+# Loop principal
+while True:
+    opcao = input(menu)
+
+    if opcao == "nu":
+        criar_usuario(USUARIOS)
+
+    elif opcao == "nc":
+        cpf = input("Informe o CPF do titular da conta: ")
+        criar_conta_corrente_por_cpf(cpf)
+
+    elif opcao == "lcontas":
+        listar_contas()
+
+    elif opcao == "d":
+        cpf = input("Informe o CPF do titular da conta para depósito: ")
+        conta = buscar_conta_por_cpf(cpf)
+        if conta:
+            try:
+                valor = float(input("Informe o valor do depósito: "))
+                novo_saldo, novo_extrato = depositar(conta["saldo"], valor, conta["extrato"])
+                if novo_saldo != conta["saldo"]:
+                    conta["saldo"] = novo_saldo
+                    conta["extrato"] = novo_extrato
+            except ValueError:
+                print("Valor inválido!")
+        else:
+            print("Conta não encontrada para este CPF.")
+
+    elif opcao == "s":
+        cpf = input("Informe o CPF do titular da conta para saque: ")
+        conta = buscar_conta_por_cpf(cpf)
+        if conta:
+            try:
+                valor = float(input("Informe o valor do saque: "))
+                saldo_atual, extrato_atual = conta["saldo"], conta["extrato"]
+                novo_saldo, novo_extrato = sacar(
+                    saldo=saldo_atual,
+                    valor=valor,
+                    extrato=extrato_atual,
+                    limite=500,
+                    numero_saques=conta["saques"],
+                    limite_saques=3
+                )
+                # Só atualiza/incrementa o número de saques se o saque foi feito!
+                if novo_saldo != saldo_atual:
+                    conta["saldo"] = novo_saldo
+                    conta["extrato"] = novo_extrato
+                    conta["saques"] += 1
+            except ValueError:
+                print("Valor inválido!")
+        else:
+            print("Conta não encontrada para este CPF.")
+
+    elif opcao == "e":
+        cpf = input("Informe o CPF do titular da conta para extrato: ")
+        conta = buscar_conta_por_cpf(cpf)
+        if conta:
+            print(extrato(conta['saldo'], extrato=conta['extrato']))
+        else:
+            print("Conta não encontrada para este CPF.")
+
+    elif opcao == "q":
+        print("Saindo do sistema...")
+        break
+
+    else:
+        print("Opção inválida! Tente novamente.")
