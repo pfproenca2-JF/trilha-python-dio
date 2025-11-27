@@ -2,14 +2,10 @@
 
 <h3> módulos concluídos serão marcados com ✅</h3>
 
-​00 - Fundamentos ✅<br>
-​01 - Estrutura de dados<br>
+​00 - Primeiros passos com Python e Versionamento de código ✅<br>
+​01 - Dominando Funções e Boas Práticas em Python ✅<br>
 ​02 - Programação Orientada a Objetos<br>
-​03 - Decoradores, Iteradores e Geradores<br>
-​04 - Data e hora<br>
-​05 - Manipulação de arquivos<br>
-​06 - Gerenciamento de pacotes e boas práticas<br>
-​07 - Banco de dados<br>
-​11 - Desenvolvimento de APIs com Flask<br>
-​12 - Desenvolvimento fullstack com Django<br>
-​13 - APIs Assíncronas com FastAPI
+​03 - Fundamentos de APIs REST com FastAPI<br>
+​04 - Integrando Python com Banco de Dados Relacionais<br>
+​05 - Evoluindo com APIs Assíncronas com FastAPI<br>
+​06 - Aumentando a Produtividade com IA e Versionamento de Código <br>
