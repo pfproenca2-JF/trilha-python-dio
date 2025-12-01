@@ -1,4 +1,4 @@
-from abc import ABC, abstractclassmethod, abstractproperty
+from abc import ABC, abstractmethod, abstractproperty
 from datetime import datetime
 
 class Cliente:
@@ -7,7 +7,8 @@ class Cliente:
         self.contas = []
 
     def realizar_transacao(self, conta, transacao):
-        transacao.registrar(conta)
+        # A transação registrará a si mesma no histórico da conta
+        transacao.registrar(conta) 
 
     def adicionar_conta(self, conta):
         self.contas.append(conta)
@@ -30,27 +31,27 @@ class Conta:
     @classmethod
     def nova_conta(cls, cliente, numero):
         return cls(numero, cliente)
-    
+
     @property
     def saldo(self):
         return self._saldo
-    
+
     @property
     def numero(self):
         return self._numero
-    
+
     @property
     def agencia(self):
         return self._agencia
-    
+
     @property
     def cliente(self):
         return self._cliente
-    
+
     @property
     def historico(self):
         return self._historico
-    
+
     def sacar(self, valor):
         saldo = self.saldo
         excedeu_saldo = valor > saldo
@@ -62,32 +63,35 @@ class Conta:
             self._saldo -= valor
             print("\n@@@ Saque realizado com sucesso! @@@")
             return True
-        
+
         else:
             print("\n@@@ Operação falhou! O valor informado é inválido. @@@")
 
         return False
-    
+
     def depositar(self, valor):
         if valor > 0:
             self._saldo += valor
             print("\n@@@ Depósito realizado com sucesso! @@@")
+            return True # Correção: Retorna True se o depósito foi bem-sucedido
         else:
             print("\n@@@ Operação falhou! O valor informado é inválido. @@@")
+            return False # Retorna False se o depósito falhou
 
-        return True
-
-class COntaCorrente(Conta):
+class ContaCorrente(Conta): # Nome da classe corrigido
     def __init__(self, numero, cliente, limite=500, limite_saques=3):
         super().__init__(numero, cliente)
         self.limite = limite
         self.limite_saques = limite_saques
 
     def sacar(self, valor):
+        # Filtragem das transações para contar saques
         numero_saques = len([transacao for transacao in self.historico.transacoes 
                              if transacao["tipo"] == Saque.__name__])
-        
-        excedeu_limite = valor > self.limite, excedeu_saques = numero_saques >= self.limite_saques
+
+        # Correção da atribuição múltipla
+        excedeu_limite = valor > self.limite
+        excedeu_saques = numero_saques >= self.limite_saques
 
         if excedeu_limite:
             print("\n@@@ Operação falhou! O valor do saque excede o limite. @@@")
@@ -96,14 +100,16 @@ class COntaCorrente(Conta):
             print("\n@@@ Operação falhou! Número máximo de saques excedido. @@@")
 
         else:
+            # Chama o método sacar da classe base (Conta)
             return super().sacar(valor)
-        
+
         return False
-    
+
     def __str__(self):
+        # Correção da formatação de tabulação
         return f"""\
             Agência:\t{self.agencia}
-            C\C:t\t{self.numero}
+            C/C:\t\t{self.numero}
             Titular:\t{self.cliente.nome}
         """
 
@@ -114,14 +120,14 @@ class Historico:
     @property
     def transacoes(self):
         return self._transacoes
-    
+
     def adicionar_transacao(self, transacao):
         self._transacoes.append(
             {
                 "tipo": transacao.__class__.__name__,
                 "valor": transacao.valor,
-                "data": datetime.now().strftime
-                ("%d-%m-%Y %H:%M:%s"),
+                # Correção do formatador de segundos (%S)
+                "data": datetime.now().strftime("%d-%m-%Y %H:%M:%S"), 
             }
         )
 
@@ -131,7 +137,8 @@ class Transacao(ABC):
     def valor(self):
         pass
 
-    @abstractclassmethod
+    # Uso correto de abstractmethod
+    @abstractmethod 
     def registrar(self, conta):
         pass
 
@@ -142,7 +149,7 @@ class Saque(Transacao):
     @property
     def valor(self):
         return self._valor
-    
+
     def registrar(self, conta):
         sucesso_transacao = conta.sacar(self.valor)
 
@@ -150,10 +157,17 @@ class Saque(Transacao):
             conta.historico.adicionar_transacao(self)
 
 class Deposito(Transacao):
-    def __init__(self):
+    # Correção: O construtor deve receber e atribuir o valor
+    def __init__(self, valor):
+        self._valor = valor
+
+    # Correção: Implementação da propriedade abstrata 'valor'
+    @property
+    def valor(self):
         return self._valor
-    
+
     def registrar(self, conta):
+        # O método depositar já retorna True/False
         sucesso_transacao = conta.depositar(self.valor)
 
         if sucesso_transacao:
